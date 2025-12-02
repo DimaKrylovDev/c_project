@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Доска объявлений</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero-content">
+        <div>
+          <h1>Доска объявлений</h1>
+          <p>Добавляйте, просматривайте и удаляйте свои объявления</p>
+        </div>
+        <div class="hero-actions" id="authActions">
+          <button id="showLogin" class="ghost">Войти</button>
+          <button id="showRegister" class="secondary">Регистрация</button>
+        </div>
+        <div class="hero-profile hidden" id="profileActions">
+          <div class="chip" id="profileSummary"></div>
+          <button id="openProfile" class="ghost">Мой профиль</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="card wide">
+        <div class="section-header">
+          <h2>Все объявления</h2>
+          <button id="refreshAds" class="secondary">Обновить</button>
+        </div>
+        <p class="muted">Нажмите “Аккаунт”, чтобы войти и управлять личными объявлениями.</p>
+        <div id="adsList" class="ads"></div>
+      </section>
+    </main>
+
+    <div id="message" class="message hidden"></div>
+
+    <div class="backdrop hidden" id="backdrop"></div>
+    <div class="modal hidden" id="accountModal" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <button class="close" id="closeModal" aria-label="Закрыть окно">×</button>
+        <div class="auth-tabs hidden" id="modalTabs">
+          <button id="tabLogin" class="auth-tab active">Вход</button>
+          <button id="tabRegister" class="auth-tab">Регистрация</button>
+        </div>
+        <div id="authViews">
+          <div id="loginView">
+            <form id="loginForm">
+              <label>
+                Email
+                <input type="email" name="email" required />
+              </label>
+              <label>
+                Пароль
+                <input type="password" name="password" required />
+              </label>
+              <button type="submit">Войти</button>
+            </form>
+          </div>
+          <div id="registerView" class="hidden">
+            <form id="registerForm">
+              <label>
+                Имя
+                <input type="text" name="name" required />
+              </label>
+              <label>
+                Email
+                <input type="email" name="email" required />
+              </label>
+              <label>
+                Пароль
+                <input type="password" name="password" required />
+              </label>
+              <button type="submit">Создать аккаунт</button>
+            </form>
+          </div>
+        </div>
+        <div class="profile-panel hidden" id="profilePanel">
+          <h3>Мой профиль</h3>
+          <div class="profile-summary" id="modalProfileSummary"></div>
+          <form id="adForm">
+            <h4>Добавить объявление</h4>
+            <label>
+              Заголовок
+              <input type="text" name="title" required />
+            </label>
+            <label>
+              Цена
+              <input type="number" name="price" step="0.01" min="0" />
+            </label>
+            <label>
+              Описание
+              <textarea name="description" rows="3" required></textarea>
+            </label>
+            <button type="submit">Опубликовать</button>
+          </form>
+          <div>
+            <h4>Мои объявления</h4>
+            <div id="myAdsList" class="ads"></div>
+          </div>
+          <button id="profileLogout" class="secondary">Выйти</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>
+
