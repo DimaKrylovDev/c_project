@@ -28,9 +28,8 @@ namespace
     std::string toLower(std::string_view value)
     {
         std::string result(value);
-        std::transform(result.begin(), result.end(), result.begin(), [](unsigned char ch) {
-            return static_cast<char>(std::tolower(ch));
-        });
+        std::transform(result.begin(), result.end(), result.begin(), [](unsigned char ch)
+                       { return static_cast<char>(std::tolower(ch)); });
         return result;
     }
 
@@ -45,7 +44,7 @@ namespace
         return std::string(value.substr(begin, end - begin + 1));
     }
 
-    std::string urlDecode(const std::string& value)
+    std::string urlDecode(const std::string &value)
     {
         std::string result;
         result.reserve(value.size());
@@ -70,7 +69,7 @@ namespace
         return result;
     }
 
-    std::unordered_map<std::string, std::string> parseParams(const std::string& data)
+    std::unordered_map<std::string, std::string> parseParams(const std::string &data)
     {
         std::unordered_map<std::string, std::string> result;
         size_t start = 0;
@@ -98,40 +97,40 @@ namespace
         return result;
     }
 
-    std::string jsonEscape(const std::string& value)
+    std::string jsonEscape(const std::string &value)
     {
         std::ostringstream oss;
         for (char ch : value)
         {
             switch (ch)
             {
-                case '\"':
-                    oss << "\\\"";
-                    break;
-                case '\\':
-                    oss << "\\\\";
-                    break;
-                case '\n':
-                    oss << "\\n";
-                    break;
-                case '\r':
-                    oss << "\\r";
-                    break;
-                case '\t':
-                    oss << "\\t";
-                    break;
-                default:
-                    if (static_cast<unsigned char>(ch) < 0x20)
-                    {
-                        oss << "\\u"
-                            << std::hex << std::setw(4) << std::setfill('0')
-                            << static_cast<int>(static_cast<unsigned char>(ch))
-                            << std::dec << std::setw(0);
-                    }
-                    else
-                    {
-                        oss << ch;
-                    }
+            case '\"':
+                oss << "\\\"";
+                break;
+            case '\\':
+                oss << "\\\\";
+                break;
+            case '\n':
+                oss << "\\n";
+                break;
+            case '\r':
+                oss << "\\r";
+                break;
+            case '\t':
+                oss << "\\t";
+                break;
+            default:
+                if (static_cast<unsigned char>(ch) < 0x20)
+                {
+                    oss << "\\u"
+                        << std::hex << std::setw(4) << std::setfill('0')
+                        << static_cast<int>(static_cast<unsigned char>(ch))
+                        << std::dec << std::setw(0);
+                }
+                else
+                {
+                    oss << ch;
+                }
             }
         }
         return oss.str();
@@ -148,7 +147,7 @@ struct HttpRequest
     std::unordered_map<std::string, std::string> form;
     std::string body;
 
-    [[nodiscard]] std::string getHeader(const std::string& key) const
+    [[nodiscard]] std::string getHeader(const std::string &key) const
     {
         if (auto it = headers.find(key); it != headers.end())
         {
@@ -157,7 +156,7 @@ struct HttpRequest
         return {};
     }
 
-    [[nodiscard]] std::string getParam(const std::string& key) const
+    [[nodiscard]] std::string getParam(const std::string &key) const
     {
         if (auto it = form.find(key); it != form.end())
         {
@@ -202,6 +201,15 @@ struct Advertisement
     std::time_t createdAt = 0;
 };
 
+// Структура для хранения откликов на объявления
+// Ключ - ID объявления, значение - множество ID пользователей, откликнувшихся на это объявление
+struct Response
+{
+    int userId = 0;
+    int adId = 0;
+    std::time_t respondedAt = 0;
+};
+
 class BulletinBoardApp
 {
 public:
@@ -209,28 +217,31 @@ public:
     void run(uint16_t port);
 
 private:
-    bool parseRequest(int clientSock, HttpRequest& request) const;
-    void routeRequest(const HttpRequest& request, HttpResponse& response);
-    bool handleApi(const HttpRequest& request, HttpResponse& response);
-    bool serveStatic(const std::string& path, HttpResponse& response) const;
-    void sendResponse(int clientSock, const HttpResponse& response) const;
-    std::optional<int> authenticate(const HttpRequest& request) const;
+    bool parseRequest(int clientSock, HttpRequest &request) const;
+    void routeRequest(const HttpRequest &request, HttpResponse &response);
+    bool handleApi(const HttpRequest &request, HttpResponse &response);
+    bool serveStatic(const std::string &path, HttpResponse &response) const;
+    void sendResponse(int clientSock, const HttpResponse &response) const;
+    std::optional<int> authenticate(const HttpRequest &request) const;
 
     // API handlers
-    void handleRegister(const HttpRequest& request, HttpResponse& response);
-    void handleLogin(const HttpRequest& request, HttpResponse& response);
-    void handleLogout(const HttpRequest& request, HttpResponse& response);
-    void handleSession(const HttpRequest& request, HttpResponse& response);
-    void handleAdsList(const HttpRequest& request, HttpResponse& response);
-    void handleCreateAd(const HttpRequest& request, HttpResponse& response);
-    void handleDeleteAd(const HttpRequest& request, HttpResponse& response, int advertId);
+    void handleRegister(const HttpRequest &request, HttpResponse &response);
+    void handleLogin(const HttpRequest &request, HttpResponse &response);
+    void handleLogout(const HttpRequest &request, HttpResponse &response);
+    void handleSession(const HttpRequest &request, HttpResponse &response);
+    void handleAdsList(const HttpRequest &request, HttpResponse &response);
+    void handleCreateAd(const HttpRequest &request, HttpResponse &response);
+    void handleDeleteAd(const HttpRequest &request, HttpResponse &response, int advertId);
+    void handleRespondToAd(const HttpRequest &request, HttpResponse &response, int advertId);
+    void handleMyResponses(const HttpRequest &request, HttpResponse &response);
+    void handleAdResponders(const HttpRequest &request, HttpResponse &response, int advertId);
 
     // Helpers
-    std::string readFileSafely(const std::filesystem::path& path) const;
-    std::string guessMimeType(const std::filesystem::path& path) const;
+    std::string readFileSafely(const std::filesystem::path &path) const;
+    std::string guessMimeType(const std::filesystem::path &path) const;
     std::string buildAdsJson(int currentUserId) const;
-    std::string userToJson(const User& user) const;
-    std::string hashPassword(const std::string& password) const;
+    std::string userToJson(const User &user) const;
+    std::string hashPassword(const std::string &password) const;
     std::string generateToken() const;
 
     // Data
@@ -239,6 +250,8 @@ private:
     std::vector<Advertisement> adverts_;
     std::unordered_map<std::string, int> emailToUserId_;
     std::unordered_map<std::string, int> sessions_;
+    // Хранение откликов: ключ - ID объявления, значение - множество ID пользователей
+    std::unordered_map<int, std::unordered_set<int>> responses_;
     int nextUserId_ = 1;
     int nextAdvertId_ = 1;
 
@@ -250,7 +263,7 @@ BulletinBoardApp::BulletinBoardApp()
     auto sourceDir = std::filesystem::path(__FILE__).parent_path().parent_path();
     staticRoot_ = std::filesystem::absolute(sourceDir / "public");
 
-    // Create demo user and advert
+    // Create demo users and adverts
     User demo;
     demo.id = nextUserId_++;
     demo.name = "Demo User";
@@ -258,6 +271,14 @@ BulletinBoardApp::BulletinBoardApp()
     demo.passwordHash = hashPassword("demo123");
     users_.push_back(demo);
     emailToUserId_[demo.email] = demo.id;
+
+    User alice;
+    alice.id = nextUserId_++;
+    alice.name = "Alice Smith";
+    alice.email = "alice@example.com";
+    alice.passwordHash = hashPassword("alice123");
+    users_.push_back(alice);
+    emailToUserId_[alice.email] = alice.id;
 
     Advertisement sample;
     sample.id = nextAdvertId_++;
@@ -276,6 +297,15 @@ BulletinBoardApp::BulletinBoardApp()
     sample2.price = 950.0;
     sample2.createdAt = std::time(nullptr);
     adverts_.push_back(sample2);
+
+    Advertisement sample3;
+    sample3.id = nextAdvertId_++;
+    sample3.ownerId = alice.id;
+    sample3.title = "iPhone 14 Pro";
+    sample3.description = "Mint condition, 256GB, with original box and accessories.";
+    sample3.price = 750.0;
+    sample3.createdAt = std::time(nullptr);
+    adverts_.push_back(sample3);
 }
 
 void BulletinBoardApp::run(uint16_t port)
@@ -300,7 +330,7 @@ void BulletinBoardApp::run(uint16_t port)
     addr.sin_addr.s_addr = INADDR_ANY;
     addr.sin_port = htons(port);
 
-    if (bind(serverSock, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0)
+    if (bind(serverSock, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) < 0)
     {
         std::perror("bind");
         ::close(serverSock);
@@ -319,14 +349,15 @@ void BulletinBoardApp::run(uint16_t port)
     {
         sockaddr_in clientAddr{};
         socklen_t len = sizeof(clientAddr);
-        int clientSock = accept(serverSock, reinterpret_cast<sockaddr*>(&clientAddr), &len);
+        int clientSock = accept(serverSock, reinterpret_cast<sockaddr *>(&clientAddr), &len);
         if (clientSock < 0)
         {
             std::perror("accept");
             continue;
         }
 
-        std::thread([this, clientSock]() {
+        std::thread([this, clientSock]()
+                    {
             HttpRequest request;
             if (!parseRequest(clientSock, request))
             {
@@ -337,12 +368,12 @@ void BulletinBoardApp::run(uint16_t port)
             HttpResponse response;
             routeRequest(request, response);
             sendResponse(clientSock, response);
-            ::close(clientSock);
-        }).detach();
+            ::close(clientSock); })
+            .detach();
     }
 }
 
-bool BulletinBoardApp::parseRequest(int clientSock, HttpRequest& request) const
+bool BulletinBoardApp::parseRequest(int clientSock, HttpRequest &request) const
 {
     std::string raw;
     raw.reserve(1024);
@@ -445,7 +476,7 @@ bool BulletinBoardApp::parseRequest(int clientSock, HttpRequest& request) const
     return true;
 }
 
-void BulletinBoardApp::routeRequest(const HttpRequest& request, HttpResponse& response)
+void BulletinBoardApp::routeRequest(const HttpRequest &request, HttpResponse &response)
 {
     static const std::string apiPrefix = "/api/";
     if (request.path.rfind(apiPrefix, 0) == 0)
@@ -466,7 +497,7 @@ void BulletinBoardApp::routeRequest(const HttpRequest& request, HttpResponse& re
     }
 }
 
-bool BulletinBoardApp::handleApi(const HttpRequest& request, HttpResponse& response)
+bool BulletinBoardApp::handleApi(const HttpRequest &request, HttpResponse &response)
 {
     if (request.method == "POST" && request.path == "/api/register")
     {
@@ -493,6 +524,11 @@ bool BulletinBoardApp::handleApi(const HttpRequest& request, HttpResponse& respo
         handleAdsList(request, response);
         return true;
     }
+    if (request.method == "GET" && request.path == "/api/ads/my-responses")
+    {
+        handleMyResponses(request, response);
+        return true;
+    }
     if (request.method == "POST" && request.path == "/api/ads")
     {
         handleCreateAd(request, response);
@@ -507,10 +543,40 @@ bool BulletinBoardApp::handleApi(const HttpRequest& request, HttpResponse& respo
             return true;
         }
     }
+    if (request.method == "POST" && request.path.rfind("/api/ads/", 0) == 0)
+    {
+        const std::string suffix = request.path.substr(std::string("/api/ads/").size());
+        const auto slash = suffix.find('/');
+        if (slash != std::string::npos)
+        {
+            const std::string idStr = suffix.substr(0, slash);
+            const std::string action = suffix.substr(slash + 1);
+            if (!idStr.empty() && std::all_of(idStr.begin(), idStr.end(), ::isdigit) && action == "respond")
+            {
+                handleRespondToAd(request, response, std::stoi(idStr));
+                return true;
+            }
+        }
+    }
+    if (request.method == "GET" && request.path.rfind("/api/ads/", 0) == 0)
+    {
+        const std::string suffix = request.path.substr(std::string("/api/ads/").size());
+        const auto slash = suffix.find('/');
+        if (slash != std::string::npos)
+        {
+            const std::string idStr = suffix.substr(0, slash);
+            const std::string action = suffix.substr(slash + 1);
+            if (!idStr.empty() && std::all_of(idStr.begin(), idStr.end(), ::isdigit) && action == "responders")
+            {
+                handleAdResponders(request, response, std::stoi(idStr));
+                return true;
+            }
+        }
+    }
     return false;
 }
 
-bool BulletinBoardApp::serveStatic(const std::string& path, HttpResponse& response) const
+bool BulletinBoardApp::serveStatic(const std::string &path, HttpResponse &response) const
 {
     std::filesystem::path relative;
     if (path == "/" || path.empty())
@@ -551,21 +617,32 @@ bool BulletinBoardApp::serveStatic(const std::string& path, HttpResponse& respon
     return true;
 }
 
-void BulletinBoardApp::sendResponse(int clientSock, const HttpResponse& response) const
+void BulletinBoardApp::sendResponse(int clientSock, const HttpResponse &response) const
 {
-    const auto statusText = [status = response.status]() {
+    const auto statusText = [status = response.status]()
+    {
         switch (status)
         {
-            case 200: return "OK";
-            case 201: return "Created";
-            case 204: return "No Content";
-            case 400: return "Bad Request";
-            case 401: return "Unauthorized";
-            case 403: return "Forbidden";
-            case 404: return "Not Found";
-            case 409: return "Conflict";
-            case 500: return "Internal Server Error";
-            default: return "OK";
+        case 200:
+            return "OK";
+        case 201:
+            return "Created";
+        case 204:
+            return "No Content";
+        case 400:
+            return "Bad Request";
+        case 401:
+            return "Unauthorized";
+        case 403:
+            return "Forbidden";
+        case 404:
+            return "Not Found";
+        case 409:
+            return "Conflict";
+        case 500:
+            return "Internal Server Error";
+        default:
+            return "OK";
         }
     }();
 
@@ -574,7 +651,7 @@ void BulletinBoardApp::sendResponse(int clientSock, const HttpResponse& response
     oss << "Content-Type: " << response.contentType << "\r\n";
     oss << "Content-Length: " << response.body.size() << "\r\n";
     oss << "Connection: close\r\n";
-    for (const auto& [key, value] : response.headers)
+    for (const auto &[key, value] : response.headers)
     {
         oss << key << ": " << value << "\r\n";
     }
@@ -594,7 +671,7 @@ void BulletinBoardApp::sendResponse(int clientSock, const HttpResponse& response
     }
 }
 
-std::optional<int> BulletinBoardApp::authenticate(const HttpRequest& request) const
+std::optional<int> BulletinBoardApp::authenticate(const HttpRequest &request) const
 {
     const std::string authHeader = request.getHeader("authorization");
     if (authHeader.size() < 8)
@@ -616,7 +693,7 @@ std::optional<int> BulletinBoardApp::authenticate(const HttpRequest& request) co
     return std::nullopt;
 }
 
-void BulletinBoardApp::handleRegister(const HttpRequest& request, HttpResponse& response)
+void BulletinBoardApp::handleRegister(const HttpRequest &request, HttpResponse &response)
 {
     const auto name = request.getParam("name");
     const auto email = request.getParam("email");
@@ -647,7 +724,7 @@ void BulletinBoardApp::handleRegister(const HttpRequest& request, HttpResponse& 
     response.body = R"({"success":true,"message":"Registration complete"})";
 }
 
-void BulletinBoardApp::handleLogin(const HttpRequest& request, HttpResponse& response)
+void BulletinBoardApp::handleLogin(const HttpRequest &request, HttpResponse &response)
 {
     const auto email = request.getParam("email");
     const auto password = request.getParam("password");
@@ -667,7 +744,7 @@ void BulletinBoardApp::handleLogin(const HttpRequest& request, HttpResponse& res
         return;
     }
     const auto userId = it->second;
-    const auto& user = users_[userId - 1];
+    const auto &user = users_[userId - 1];
     if (user.passwordHash != hashPassword(password))
     {
         response.status = 401;
@@ -683,7 +760,7 @@ void BulletinBoardApp::handleLogin(const HttpRequest& request, HttpResponse& res
     response.body = oss.str();
 }
 
-void BulletinBoardApp::handleLogout(const HttpRequest& request, HttpResponse& response)
+void BulletinBoardApp::handleLogout(const HttpRequest &request, HttpResponse &response)
 {
     const auto authHeader = request.getHeader("authorization");
     if (authHeader.size() >= 8)
@@ -701,7 +778,7 @@ void BulletinBoardApp::handleLogout(const HttpRequest& request, HttpResponse& re
     response.body = R"({"success":true})";
 }
 
-void BulletinBoardApp::handleSession(const HttpRequest& request, HttpResponse& response)
+void BulletinBoardApp::handleSession(const HttpRequest &request, HttpResponse &response)
 {
     const auto userId = authenticate(request);
     if (!userId)
@@ -711,19 +788,19 @@ void BulletinBoardApp::handleSession(const HttpRequest& request, HttpResponse& r
     }
 
     std::lock_guard lock(dataMutex_);
-    const User& user = users_[*userId - 1];
+    const User &user = users_[*userId - 1];
     std::ostringstream oss;
     oss << R"({"authenticated":true,"user":)" << userToJson(user) << '}';
     response.body = oss.str();
 }
 
-void BulletinBoardApp::handleAdsList(const HttpRequest& request, HttpResponse& response)
+void BulletinBoardApp::handleAdsList(const HttpRequest &request, HttpResponse &response)
 {
     const auto userId = authenticate(request);
     response.body = buildAdsJson(userId.value_or(0));
 }
 
-void BulletinBoardApp::handleCreateAd(const HttpRequest& request, HttpResponse& response)
+void BulletinBoardApp::handleCreateAd(const HttpRequest &request, HttpResponse &response)
 {
     const auto userId = authenticate(request);
     if (!userId)
@@ -775,7 +852,7 @@ void BulletinBoardApp::handleCreateAd(const HttpRequest& request, HttpResponse& 
     response.body = R"({"success":true})";
 }
 
-void BulletinBoardApp::handleDeleteAd(const HttpRequest& request, HttpResponse& response, int advertId)
+void BulletinBoardApp::handleDeleteAd(const HttpRequest &request, HttpResponse &response, int advertId)
 {
     const auto userId = authenticate(request);
     if (!userId)
@@ -786,9 +863,8 @@ void BulletinBoardApp::handleDeleteAd(const HttpRequest& request, HttpResponse& 
     }
 
     std::lock_guard lock(dataMutex_);
-    auto it = std::find_if(adverts_.begin(), adverts_.end(), [advertId](const Advertisement& ad) {
-        return ad.id == advertId;
-    });
+    auto it = std::find_if(adverts_.begin(), adverts_.end(), [advertId](const Advertisement &ad)
+                           { return ad.id == advertId; });
     if (it == adverts_.end())
     {
         response.status = 404;
@@ -802,10 +878,186 @@ void BulletinBoardApp::handleDeleteAd(const HttpRequest& request, HttpResponse& 
         return;
     }
     adverts_.erase(it);
+    // Удаляем также все отклики на это объявление
+    responses_.erase(advertId);
     response.body = R"({"success":true})";
 }
 
-std::string BulletinBoardApp::readFileSafely(const std::filesystem::path& path) const
+void BulletinBoardApp::handleRespondToAd(const HttpRequest &request, HttpResponse &response, int advertId)
+{
+    // Проверка аутентификации
+    const auto userId = authenticate(request);
+    if (!userId)
+    {
+        response.status = 401;
+        response.body = R"({"error":"Authentication required"})";
+        return;
+    }
+
+    std::lock_guard lock(dataMutex_);
+
+    // Проверка существования объявления
+    auto it = std::find_if(adverts_.begin(), adverts_.end(), [advertId](const Advertisement &ad)
+                           { return ad.id == advertId; });
+    if (it == adverts_.end())
+    {
+        response.status = 404;
+        response.body = R"({"error":"Advertisement not found"})";
+        return;
+    }
+
+    // Проверка: пользователь не может откликнуться на своё объявление
+    if (it->ownerId == *userId)
+    {
+        response.status = 400;
+        response.body = R"({"error":"You cannot respond to your own advertisement"})";
+        return;
+    }
+
+    // Проверка: пользователь уже откликался на это объявление
+    if (responses_[advertId].count(*userId) > 0)
+    {
+        response.status = 409;
+        response.body = R"({"error":"You have already responded to this advertisement"})";
+        return;
+    }
+
+    // Добавление отклика
+    responses_[advertId].insert(*userId);
+
+    response.body = R"({"success":true})";
+}
+
+void BulletinBoardApp::handleMyResponses(const HttpRequest &request, HttpResponse &response)
+{
+    // Проверка аутентификации
+    const auto userId = authenticate(request);
+    if (!userId)
+    {
+        response.status = 401;
+        response.body = R"({"error":"Authentication required"})";
+        return;
+    }
+
+    std::lock_guard lock(dataMutex_);
+
+    // Собираем все объявления, на которые откликнулся пользователь
+    std::ostringstream oss;
+    oss << R"({"ads":[)";
+
+    bool first = true;
+    for (const auto &[adId, userIds] : responses_)
+    {
+        // Проверяем, откликался ли текущий пользователь на это объявление
+        if (userIds.count(*userId) > 0)
+        {
+            // Находим само объявление
+            auto adIt = std::find_if(adverts_.begin(), adverts_.end(),
+                                     [adId](const Advertisement &ad)
+                                     { return ad.id == adId; });
+
+            if (adIt != adverts_.end())
+            {
+                const auto &ad = *adIt;
+                const auto &owner = users_[ad.ownerId - 1];
+
+                if (!first)
+                {
+                    oss << ',';
+                }
+                first = false;
+
+                oss << '{';
+                oss << R"("id":)" << ad.id << ',';
+                oss << R"("title":")" << jsonEscape(ad.title) << R"(",)";
+                oss << R"("description":")" << jsonEscape(ad.description) << R"(",)";
+                {
+                    std::ostringstream priceStream;
+                    priceStream << std::fixed << std::setprecision(2) << ad.price;
+                    oss << R"("price":)" << priceStream.str() << ',';
+                }
+                oss << R"("ownerName":")" << jsonEscape(owner.name) << R"(",)";
+                oss << R"("createdAt":)" << static_cast<long long>(ad.createdAt) << ',';
+                oss << R"("hasResponded":true)";
+                oss << '}';
+            }
+        }
+    }
+
+    oss << "]}";
+    response.body = oss.str();
+}
+
+void BulletinBoardApp::handleAdResponders(const HttpRequest &request, HttpResponse &response, int advertId)
+{
+    // Проверка аутентификации
+    const auto userId = authenticate(request);
+    if (!userId)
+    {
+        response.status = 401;
+        response.body = R"({"error":"Authentication required"})";
+        return;
+    }
+
+    std::lock_guard lock(dataMutex_);
+
+    // Находим объявление
+    auto adIt = std::find_if(adverts_.begin(), adverts_.end(),
+                             [advertId](const Advertisement &ad)
+                             { return ad.id == advertId; });
+
+    if (adIt == adverts_.end())
+    {
+        response.status = 404;
+        response.body = R"({"error":"Advertisement not found"})";
+        return;
+    }
+
+    // Проверяем, что запрашивающий является автором объявления
+    if (adIt->ownerId != *userId)
+    {
+        response.status = 403;
+        response.body = R"({"error":"Only the owner can view responders"})";
+        return;
+    }
+
+    // Собираем список пользователей, откликнувшихся на это объявление
+    std::ostringstream oss;
+    oss << R"({"responders":[)";
+
+    auto responsesIt = responses_.find(advertId);
+    if (responsesIt != responses_.end())
+    {
+        bool first = true;
+        for (int responderId : responsesIt->second)
+        {
+            // Находим пользователя
+            auto userIt = std::find_if(users_.begin(), users_.end(),
+                                       [responderId](const User &u)
+                                       { return u.id == responderId; });
+
+            if (userIt != users_.end())
+            {
+                if (!first)
+                {
+                    oss << ',';
+                }
+                first = false;
+
+                oss << '{';
+                oss << R"("id":)" << userIt->id << ',';
+                oss << R"("name":")" << jsonEscape(userIt->name) << R"(",)";
+                oss << R"("email":")" << jsonEscape(userIt->email) << '"';
+                oss << '}';
+            }
+        }
+    }
+
+    oss << "]}";
+    response.body = oss.str();
+}
+
+std::string BulletinBoardApp::readFileSafely(const std::filesystem::path &path) const
 {
     std::ifstream input(path, std::ios::binary);
     if (!input)
@@ -817,17 +1069,25 @@ std::string BulletinBoardApp::readFileSafely(const std::filesystem::path& path) 
     return oss.str();
 }
 
-std::string BulletinBoardApp::guessMimeType(const std::filesystem::path& path) const
+std::string BulletinBoardApp::guessMimeType(const std::filesystem::path &path) const
 {
     const auto ext = path.extension().string();
-    if (ext == ".html") return "text/html; charset=utf-8";
-    if (ext == ".css") return "text/css; charset=utf-8";
-    if (ext == ".js") return "application/javascript; charset=utf-8";
-    if (ext == ".json") return "application/json; charset=utf-8";
-    if (ext == ".png") return "image/png";
-    if (ext == ".jpg" || ext == ".jpeg") return "image/jpeg";
-    if (ext == ".svg") return "image/svg+xml";
-    if (ext == ".ico") return "image/x-icon";
+    if (ext == ".html")
+        return "text/html; charset=utf-8";
+    if (ext == ".css")
+        return "text/css; charset=utf-8";
+    if (ext == ".js")
+        return "application/javascript; charset=utf-8";
+    if (ext == ".json")
+        return "application/json; charset=utf-8";
+    if (ext == ".png")
+        return "image/png";
+    if (ext == ".jpg" || ext == ".jpeg")
+        return "image/jpeg";
+    if (ext == ".svg")
+        return "image/svg+xml";
+    if (ext == ".ico")
+        return "image/x-icon";
     return "text/plain; charset=utf-8";
 }
 
@@ -838,8 +1098,8 @@ std::string BulletinBoardApp::buildAdsJson(int currentUserId) const
     oss << R"({"ads":[)";
     for (size_t i = 0; i < adverts_.size(); ++i)
     {
-        const auto& ad = adverts_[i];
-        const auto& owner = users_[ad.ownerId - 1];
+        const auto &ad = adverts_[i];
+        const auto &owner = users_[ad.ownerId - 1];
         if (i > 0)
         {
             oss << ',';
@@ -855,14 +1115,34 @@ std::string BulletinBoardApp::buildAdsJson(int currentUserId) const
         }
         oss << R"("ownerName":")" << jsonEscape(owner.name) << R"(",)";
         oss << R"("createdAt":)" << static_cast<long long>(ad.createdAt) << ',';
-        oss << R"("mine":)" << (ad.ownerId == currentUserId ? "true" : "false");
+        oss << R"("mine":)" << (ad.ownerId == currentUserId ? "true" : "false") << ',';
+
+        // Информация об откликах
+        const bool isOwner = (ad.ownerId == currentUserId);
+        auto responsesIt = responses_.find(ad.id);
+        const size_t responsesCount = (responsesIt != responses_.end()) ? responsesIt->second.size() : 0;
+
+        // Только автор видит количество откликов
+        if (isOwner)
+        {
+            oss << R"("responsesCount":)" << responsesCount << ',';
+        }
+
+        // Проверка: откликался ли текущий пользователь
+        bool hasResponded = false;
+        if (currentUserId > 0 && responsesIt != responses_.end())
+        {
+            hasResponded = responsesIt->second.count(currentUserId) > 0;
+        }
+        oss << R"("hasResponded":)" << (hasResponded ? "true" : "false");
+
         oss << '}';
     }
     oss << "]}";
     return oss.str();
 }
 
-std::string BulletinBoardApp::userToJson(const User& user) const
+std::string BulletinBoardApp::userToJson(const User &user) const
 {
     std::ostringstream oss;
     oss << '{'
@@ -872,7 +1152,7 @@ std::string BulletinBoardApp::userToJson(const User& user) const
     return oss.str();
 }
 
-std::string BulletinBoardApp::hashPassword(const std::string& password) const
+std::string BulletinBoardApp::hashPassword(const std::string &password) const
 {
     std::hash<std::string> hasher;
     std::size_t hashed = hasher(password);
@@ -899,4 +1179,3 @@ int main()
     app.run(8080);
     return 0;
 }
-

@@ -10,6 +10,7 @@ const els = {
   refreshAds: document.getElementById('refreshAds'),
   adsList: document.getElementById('adsList'),
   myAdsList: document.getElementById('myAdsList'),
+  myResponsesList: document.getElementById('myResponsesList'),
   message: document.getElementById('message'),
   profileLogout: document.getElementById('profileLogout'),
   closeModal: document.getElementById('closeModal'),
@@ -115,24 +116,96 @@ function renderAds(listElement, ads, withActions = false) {
   ads.forEach((ad) => {
     const card = document.createElement('article');
     card.className = 'ad';
-    card.innerHTML = `
-      <div class="ad-header">
-        <h3>${escapeHtml(ad.title)}</h3>
-        <span class="price">${Number(ad.price).toFixed(2)} ₽</span>
-      </div>
-      <p class="ad-description">${escapeHtml(ad.description)}</p>
-      <div class="ad-meta">
-        <span>Автор: ${escapeHtml(ad.ownerName)}</span>
-        <span>${formatDate(ad.createdAt)}</span>
-      </div>
+
+    // Основная информация об объявлении
+    const headerDiv = document.createElement('div');
+    headerDiv.className = 'ad-header';
+    headerDiv.innerHTML = `
+      <h3>${escapeHtml(ad.title)}</h3>
+      <span class="price">${Number(ad.price).toFixed(2)} ₽</span>
     `;
-    if (withActions) {
-      const button = document.createElement('button');
-      button.textContent = 'Удалить';
-      button.className = 'danger';
-      button.addEventListener('click', () => deleteAd(ad.id));
-      card.appendChild(button);
+    card.appendChild(headerDiv);
+
+    const description = document.createElement('p');
+    description.className = 'ad-description';
+    description.textContent = ad.description;
+    card.appendChild(description);
+
+    const metaDiv = document.createElement('div');
+    metaDiv.className = 'ad-meta';
+    metaDiv.innerHTML = `
+      <span>Автор: ${escapeHtml(ad.ownerName)}</span>
+      <span>${formatDate(ad.createdAt)}</span>
+    `;
+    card.appendChild(metaDiv);
+
+    // Отклики: показываем счетчик только для автора
+    if (ad.mine && typeof ad.responsesCount !== 'undefined') {
+      const responsesDiv = document.createElement('div');
+      responsesDiv.className = 'responses-count';
+      const plural = (ad.responsesCount % 10 === 1 && ad.responsesCount % 100 !== 11) ? 'отклик' :
+        (ad.responsesCount % 10 >= 2 && ad.responsesCount % 10 <= 4 &&
+          (ad.responsesCount % 100 < 10 || ad.responsesCount % 100 >= 20)) ? 'отклика' : 'откликов';
+
+      const badge = document.createElement('span');
+      badge.className = 'badge-responses';
+      badge.innerHTML = `📨 ${ad.responsesCount} ${plural}`;
+
+      // Если есть отклики, делаем счетчик кликабельным
+      if (ad.responsesCount > 0) {
+        badge.classList.add('clickable');
+        badge.style.cursor = 'pointer';
+        badge.addEventListener('click', () => showResponders(ad.id, ad.title));
+      }
+
+      responsesDiv.appendChild(badge);
+      card.appendChild(responsesDiv);
     }
+
+    // Кнопки действий
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'ad-actions';
+
+    // Логика отображения кнопки "Откликнуться"
+    if (!ad.mine) {
+      if (state.user) {
+        // Авторизованный пользователь видит кнопку
+        const respondButton = document.createElement('button');
+        respondButton.className = 'respond-btn';
+
+        if (ad.hasResponded) {
+          respondButton.textContent = '✓ Вы откликнулись';
+          respondButton.disabled = true;
+          respondButton.classList.add('responded');
+        } else {
+          respondButton.textContent = 'Откликнуться';
+          respondButton.addEventListener('click', () => respondToAd(ad.id, respondButton));
+        }
+
+        actionsDiv.appendChild(respondButton);
+      } else {
+        // Неавторизованный пользователь видит подсказку
+        const loginHint = document.createElement('button');
+        loginHint.className = 'respond-btn login-hint';
+        loginHint.textContent = '🔒 Войдите, чтобы откликнуться';
+        loginHint.addEventListener('click', () => openModal('login'));
+        actionsDiv.appendChild(loginHint);
+      }
+    }
+
+    // Кнопка "Удалить" для своих объявлений
+    if (withActions) {
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = 'Удалить';
+      deleteButton.className = 'danger';
+      deleteButton.addEventListener('click', () => deleteAd(ad.id));
+      actionsDiv.appendChild(deleteButton);
+    }
+
+    if (actionsDiv.children.length > 0) {
+      card.appendChild(actionsDiv);
+    }
+
     listElement.appendChild(card);
   });
 }
@@ -165,6 +238,92 @@ async function deleteAd(id) {
   }
 }
 
+async function respondToAd(id, button) {
+  // Защита от мультикликов
+  if (button.disabled) return;
+  button.disabled = true;
+
+  const originalText = button.textContent;
+  button.textContent = 'Отправка...';
+
+  try {
+    const response = await fetch(`/api/ads/${id}/respond`, {
+      method: 'POST',
+      headers: buildHeaders('application/x-www-form-urlencoded'),
+      body: new URLSearchParams(),
+    });
+    await handleResponse(response);
+
+    showMessage('Ваш отклик отправлен!');
+    button.textContent = '✓ Вы откликнулись';
+    button.classList.add('responded');
+
+    // Обновляем список объявлений и откликов
+    loadAds();
+    loadMyAds();
+    loadMyResponses();
+  } catch (error) {
+    showMessage(error.message, true);
+    button.textContent = originalText;
+    button.disabled = false;
+  }
+}
+
+async function showResponders(adId, adTitle) {
+  try {
+    const data = await fetchJson(`/api/ads/${adId}/responders`);
+    const responders = data.responders || [];
+
+    if (responders.length === 0) {
+      showMessage('Пока нет откликов на это объявление');
+      return;
+    }
+
+    // Создаем модальное окно для отображения откликнувшихся
+    const modal = document.createElement('div');
+    modal.className = 'responders-modal';
+    modal.innerHTML = `
+      <div class="responders-modal-content">
+        <div class="responders-header">
+          <h3>Откликнувшиеся на "${escapeHtml(adTitle)}"</h3>
+          <button class="close-responders">×</button>
+        </div>
+        <div class="responders-list">
+          ${responders.map(user => `
+            <div class="responder-item">
+              <div class="responder-avatar">${user.name.charAt(0).toUpperCase()}</div>
+              <div class="responder-info">
+                <div class="responder-name">${escapeHtml(user.name)}</div>
+                <div class="responder-email">${escapeHtml(user.email)}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Закрытие модального окна
+    const closeBtn = modal.querySelector('.close-responders');
+    const closeModal = () => {
+      modal.classList.add('closing');
+      setTimeout(() => modal.remove(), 300);
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    // Анимация появления
+    setTimeout(() => modal.classList.add('visible'), 10);
+
+  } catch (error) {
+    showMessage(error.message, true);
+  }
+}
+
 function setActiveTab(tab) {
   if (tab === 'login') {
     els.tabLogin.classList.add('active');
@@ -191,6 +350,7 @@ function openModal(initialTab = 'login') {
     els.profilePanel.classList.remove('hidden');
     els.modalProfileSummary.textContent = `${state.user.name} · ${state.user.email}`;
     loadMyAds();
+    loadMyResponses();
   } else {
     els.modalTabs.classList.remove('hidden');
     els.profilePanel.classList.add('hidden');
@@ -284,6 +444,7 @@ function updateMyAdsUI() {
       el.disabled = false;
     });
     loadMyAds();
+    loadMyResponses();
   } else {
     els.profileActions.classList.add('hidden');
     els.authActions.classList.remove('hidden');
@@ -295,6 +456,9 @@ function updateMyAdsUI() {
     if (els.myAdsList) {
       els.myAdsList.innerHTML = '<p class="muted">Войдите, чтобы увидеть свои объявления</p>';
     }
+    if (els.myResponsesList) {
+      els.myResponsesList.innerHTML = '<p class="muted">Войдите, чтобы увидеть свои отклики</p>';
+    }
   }
 }
 
@@ -304,6 +468,16 @@ async function loadMyAds() {
     const data = await fetchJson('/api/ads');
     const myAds = (data.ads || []).filter((ad) => ad.mine);
     renderAds(els.myAdsList, myAds, true);
+  } catch (error) {
+    showMessage(error.message, true);
+  }
+}
+
+async function loadMyResponses() {
+  if (!state.token || !els.myResponsesList) return;
+  try {
+    const data = await fetchJson('/api/ads/my-responses');
+    renderAds(els.myResponsesList, data.ads || [], false);
   } catch (error) {
     showMessage(error.message, true);
   }

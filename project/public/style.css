@@ -104,6 +104,7 @@ button.ghost {
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.4);
 }
+
 .hero-actions {
   display: flex;
   gap: 0.75rem;
@@ -301,3 +302,217 @@ button:disabled {
   gap: 1rem;
 }
 
+.profile-panel>div {
+  border-bottom: 1px solid #e4e7ec;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.profile-panel>div:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* Стили для откликов */
+.ad-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.respond-btn {
+  background: #16a34a;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.25rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.respond-btn:hover:not(:disabled) {
+  background: #15803d;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
+
+.respond-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.respond-btn.responded {
+  background: #6b7280;
+}
+
+.respond-btn.login-hint {
+  background: #f59e0b;
+  cursor: pointer;
+}
+
+.respond-btn.login-hint:hover {
+  background: #d97706;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.responses-count {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #e4e7ec;
+}
+
+.badge-responses {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: #fff;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.badge-responses.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+}
+
+/* Модальное окно для откликнувшихся */
+.responders-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  padding: 1rem;
+}
+
+.responders-modal.visible {
+  opacity: 1;
+}
+
+.responders-modal.closing {
+  opacity: 0;
+}
+
+.responders-modal-content {
+  background: #fff;
+  border-radius: 20px;
+  width: min(500px, 100%);
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.3);
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+.responders-modal.visible .responders-modal-content {
+  transform: scale(1);
+}
+
+.responders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e4e7ec;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+}
+
+.responders-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #1f2933;
+}
+
+.close-responders {
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+  color: #475467;
+  cursor: pointer;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+}
+
+.close-responders:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.responders-list {
+  padding: 1rem;
+  overflow-y: auto;
+  max-height: calc(80vh - 100px);
+}
+
+.responder-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  margin-bottom: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.responder-item:hover {
+  background: #f1f5f9;
+  transform: translateX(4px);
+}
+
+.responder-item:last-child {
+  margin-bottom: 0;
+}
+
+.responder-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.responder-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.responder-name {
+  font-weight: 600;
+  color: #1f2933;
+  margin-bottom: 0.25rem;
+}
+
+.responder-email {
+  font-size: 0.9rem;
+  color: #98a2b3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
