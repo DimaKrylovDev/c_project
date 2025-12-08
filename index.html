@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Современная доска объявлений с системой откликов на C++ и JavaScript">
+    <title>Bulletin Board - Доска объявлений</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #8b5cf6;
+            --success: #16a34a;
+            --danger: #ef4444;
+            --text: #1f2933;
+            --text-light: #6b7280;
+            --bg: #ffffff;
+            --bg-light: #f8fafc;
+            --border: #e4e7ec;
+            --shadow: rgba(15, 23, 42, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 0 4px 6px var(--shadow);
+        }
+
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 2.5rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 2rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        nav a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 6rem 0;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            font-weight: 800;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 5rem 0;
+            background: var(--bg-light);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: var(--text);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px var(--shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px var(--shadow);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .feature-card p {
+            color: var(--text-light);
+        }
+
+        /* Tech Stack */
+        .tech {
+            padding: 5rem 0;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .tech-item {
+            text-align: center;
+            padding: 2rem;
+            background: var(--bg-light);
+            border-radius: 12px;
+            transition: transform 0.3s;
+        }
+
+        .tech-item:hover {
+            transform: scale(1.05);
+        }
+
+        .tech-item .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .tech-item h4 {
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        /* Installation */
+        .installation {
+            padding: 5rem 0;
+            background: var(--bg-light);
+        }
+
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 2rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .code-block code {
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        .code-block .comment {
+            color: #94a3b8;
+        }
+
+        .code-block .keyword {
+            color: #c792ea;
+        }
+
+        .code-block .string {
+            color: #c3e88d;
+        }
+
+        /* Stats */
+        .stats {
+            padding: 4rem 0;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .stat-item h3 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-item p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text);
+            color: white;
+            padding: 3rem 0;
+            text-align: center;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .footer-section a {
+            color: #cbd5e1;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+            transition: color 0.2s;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 2rem;
+            margin-top: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.2rem;
+            }
+
+            nav {
+                margin-top: 1rem;
+            }
+
+            nav a {
+                margin-left: 0;
+                margin-right: 1rem;
+            }
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .badge-new {
+            background: var(--success);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <span class="logo-icon">📋</span>
+                <span>Bulletin Board</span>
+            </div>
+            <nav>
+                <a href="#features">Возможности</a>
+                <a href="#tech">Технологии</a>
+                <a href="#install">Установка</a>
+                <a href="https://github.com/DimaKrylovDev/c_project" target="_blank">GitHub</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Доска объявлений</h1>
+            <p>Современное веб-приложение с полной функциональностью регистрации, авторизации и системы откликов</p>
+            <div class="hero-buttons">
+                <a href="#install" class="btn btn-primary">🚀 Начать</a>
+                <a href="https://github.com/DimaKrylovDev/c_project" class="btn btn-secondary" target="_blank">📦
+                    GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h3>10+</h3>
+                    <p>API Endpoints</p>
+                </div>
+                <div class="stat-item">
+                    <h3>100%</h3>
+                    <p>Потокобезопасность</p>
+                </div>
+                <div class="stat-item">
+                    <h3>0</h3>
+                    <p>Внешних зависимостей</p>
+                </div>
+                <div class="stat-item">
+                    <h3>C++17</h3>
+                    <p>Современный стандарт</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">✨ Основные возможности</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">👤</div>
+                    <h3>Регистрация и авторизация</h3>
+                    <p>Полноценная система пользователей с токенами авторизации и безопасным хешированием паролей</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <h3>Управление объявлениями</h3>
+                    <p>Создание, просмотр и удаление объявлений с указанием цены, описания и контактной информации</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <h3>Система откликов <span class="badge badge-new">NEW</span></h3>
+                    <p>Возможность откликнуться на объявления, просмотр откликнувшихся и управление своими откликами</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Безопасность</h3>
+                    <p>Защита от повторных откликов, мультикликов и проверка прав доступа на всех уровнях</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Высокая производительность</h3>
+                    <p>Многопоточный сервер на C++ с эффективными структурами данных и минимальной задержкой</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Современный UI</h3>
+                    <p>Красивый интерфейс с анимациями, модальными окнами и адаптивным дизайном</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tech" class="tech">
+        <div class="container">
+            <h2 class="section-title">🛠️ Технологический стек</h2>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <div class="icon">⚙️</div>
+                    <h4>C++17</h4>
+                    <p>Backend сервер</p>
+                </div>
+                <div class="tech-item">
+                    <div class="icon">🌐</div>
+                    <h4>HTTP Server</h4>
+                    <p>Собственный сервер</p>
+                </div>
+                <div class="tech-item">
+                    <div class="icon">📜</div>
+                    <h4>JavaScript</h4>
+                    <p>Frontend логика</p>
+                </div>
+                <div class="tech-item">
+                    <div class="icon">🎨</div>
+                    <h4>CSS3</h4>
+                    <p>Стилизация</p>
+                </div>
+                <div class="tech-item">
+                    <div class="icon">🔧</div>
+                    <h4>CMake</h4>
+                    <p>Система сборки</p>
+                </div>
+                <div class="tech-item">
+                    <div class="icon">🧵</div>
+                    <h4>pthread</h4>
+                    <p>Многопоточность</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="install" class="installation">
+        <div class="container">
+            <h2 class="section-title">📦 Быстрая установка</h2>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem;">1. Клонирование репозитория</h3>
+            <div class="code-block">
+                <code>
+<span class="comment"># Клонируйте репозиторий</span><br>
+git clone <span class="string">https://github.com/DimaKrylovDev/c_project.git</span><br>
+cd c_project
+                </code>
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem;">2. Сборка проекта</h3>
+            <div class="code-block">
+                <code>
+<span class="comment"># Создайте директорию сборки</span><br>
+cd project<br>
+mkdir -p build && cd build<br>
+<br>
+<span class="comment"># Соберите проект</span><br>
+cmake ..<br>
+make
+                </code>
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem;">3. Запуск сервера</h3>
+            <div class="code-block">
+                <code>
+<span class="comment"># Запустите сервер</span><br>
+./BulletinBoard<br>
+<br>
+<span class="comment"># Сервер будет доступен на http://localhost:8080</span>
+                </code>
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem;">4. Откройте в браузере</h3>
+            <div class="code-block">
+                <code>
+<span class="comment"># Откройте браузер и перейдите по адресу:</span><br>
+http://localhost:8080
+                </code>
+            </div>
+
+            <div
+                style="margin-top: 3rem; padding: 2rem; background: white; border-radius: 12px; border-left: 4px solid var(--primary);">
+                <h3 style="margin-bottom: 1rem;">💡 Тестовые пользователи</h3>
+                <p style="margin-bottom: 0.5rem;"><strong>Demo User:</strong> demo@example.com / demo123</p>
+                <p><strong>Alice Smith:</strong> alice@example.com / alice123</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Проект</h4>
+                    <a href="#features">Возможности</a>
+                    <a href="#tech">Технологии</a>
+                    <a href="#install">Установка</a>
+                    <a href="README.md">Документация</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Разработка</h4>
+                    <a href="https://github.com/DimaKrylovDev/c_project" target="_blank">GitHub</a>
+                    <a href="LICENSE">Лицензия</a>
+                    <a href="#install">API Документация</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Авторы</h4>
+                    <p style="color: #cbd5e1; margin-bottom: 0.5rem;">Дмитрий - кодовая база</p>
+                    <p style="color: #cbd5e1;">Арсений - функционал откликов и репозиторий</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Bulletin Board. Все права защищены.</p>
+                <p style="margin-top: 0.5rem; color: #9ca3af;">Создано с ❤️ на C++ и JavaScript</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Плавная прокрутка для якорных ссылок
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Анимация появления элементов при прокрутке
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card, .tech-item').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.6s, transform 0.6s';
+            observer.observe(el);
+        });
+    </script>
+</body>
+
+</html>
